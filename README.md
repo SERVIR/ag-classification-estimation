@@ -1,5 +1,5 @@
 # ag-classification-estimation
-![](ACES.PNG)
+![](ACES.png)
 
 Agricultural Classification and Estimation Service
 
