@@ -1,41 +1,3 @@
-var indices = require('users/biplovbhandari/Rice_Mapping_Bhutan:indices.js');
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function getIndices(listofDates, imageCollection, type) {
-  
-  if (type == 'landsat') {
-    return listofDates.map(function (ld) {
-      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
-      return indices.calculateL7L8Indices(ic);
-    });
-  } else if (type == 'sentinel2') {
-    return listofDates.map(function (ld) {
-      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
-      return indices.calculateS2Indices(ic);
-    });
-  } else if (type == 'tc') {
-    return listofDates.map(function (ld) {
-      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
-      return indices.calculateL8ToaTasseledCapIndices(ic);
-    });
-  } else if (type == 'sentinel1') {
-    return listofDates.map(function (ld) {
-      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
-      return indices.calculateS1Indices(ic);
-    });
-  } else if (type == 'combinedLandsat') {
-    return imageCollection.map(function (image) {
-      return indices.calculateL7L8Indices(image);
-    });
-  }
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -114,7 +76,6 @@ function exportImageAsset (image, description, region, scale, assetId) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-exports.getIndices = getIndices;
 exports.bulkRenameBands = bulkRenameBands;
 exports.timePeriodSelector = timePeriodSelector;
 exports.dateSplitter = dateSplitter;

@@ -237,7 +237,41 @@ function calculateS1Indices(ImageCollection) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function getIndices(listofDates, imageCollection, type) {
+  
+  if (type == 'landsat') {
+    return listofDates.map(function (ld) {
+      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
+      return indices.calculateL7L8Indices(ic);
+    });
+  } else if (type == 'sentinel2') {
+    return listofDates.map(function (ld) {
+      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
+      return indices.calculateS2Indices(ic);
+    });
+  } else if (type == 'tc') {
+    return listofDates.map(function (ld) {
+      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
+      return indices.calculateL8ToaTasseledCapIndices(ic);
+    });
+  } else if (type == 'sentinel1') {
+    return listofDates.map(function (ld) {
+      var ic = ee.ImageCollection(imageCollection.filterDate(ee.Dictionary(ld).get('startDate'), ee.Dictionary(ld).get('endDate')));
+      return indices.calculateS1Indices(ic);
+    });
+  } else if (type == 'combinedLandsat') {
+    return imageCollection.map(function (image) {
+      return indices.calculateL7L8Indices(image);
+    });
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 exports.calculateL7L8Indices = calculateL7L8Indices;
 exports.calculateL8ToaTasseledCapIndices = calculateL8ToaTasseledCapIndices;
 exports.calculateS2Indices = calculateS2Indices;
 exports.calculateS1Indices = calculateS1Indices;
+exports.getIndices = getIndices;
