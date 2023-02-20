@@ -215,7 +215,7 @@ for (var i = 0; i < l8ImagesSize; i++) {
 
 var fc = ee.FeatureCollection(l8footprint);
 print(fc);
-Map.addLayer(fc, {}, 'footprint');
+Map.addLayer(fc.geometry(), {}, 'footprint');
 
 Export.table.toDrive({
   collection: fc,

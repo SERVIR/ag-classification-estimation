@@ -26,8 +26,8 @@ var baseModule = require('users/biplovbhandari/Rice_Mapping_Bhutan:main.js');
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ROI = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_na','Bhutan'));
-Map.addLayer(ROI, {}, 'ROI');
-Map.centerObject(ROI, 9);
+// Map.addLayer(ROI, {}, 'ROI');
+// Map.centerObject(ROI, 9);
 
 
 
@@ -57,9 +57,10 @@ var LS8_TOA = ee.ImageCollection('LANDSAT/LC08/C02/T1_TOA'); // landsat toa for 
 
 
 // var monthsListL72018Oct = [5, 6, 7, 8, 9];
-var monthsList = [5, 6, 7, 8, 9, 10];
+// var monthsList = [5, 6, 7, 8, 9, 10];
+var monthsList = [8, 9, 10];
 // var monthsList = [5, 6];
-var yearsList = [2020];
+var yearsList = [2021];
 
 // export path
 var exportPath = 'projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + yearsList[0];
@@ -201,13 +202,6 @@ baseModule.utils.exportImageAsset(landsatIndices, 'LandsatCompositeIndices', ROI
 ////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-var s2Col = S2.filterBounds(ROI).filter(
-  ee.Filter.date(ee.Date.fromYMD(2018, 9, 1), ee.Date.fromYMD(2018, 9, 30))
-);
-print('s2Col', s2Col);
-
-Map.addLayer(s2Col, {}, 's2Col');
 
 var s2FinalCollection =  ee.ImageCollection(
   baseModule.utils.timePeriodSelector(S2, monthsList, yearsList, ROI)

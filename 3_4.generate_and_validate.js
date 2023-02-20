@@ -3,7 +3,10 @@ var lte2 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Final_
     Zero_2019 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/CEO_Points_4_Paper/ceo-New_Val_0_2019-plot-data-2022-10-18"),
     One_2019 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/CEO_Points_4_Paper/ceo-New_Val_1_2019-plot-data-2022-10-18"),
     Zero_2020 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/CEO_Points_4_Paper/ceo-New_Val_0_2020-plot-data-2022-10-18"),
-    One_2020 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/CEO_Points_4_Paper/ceo-New_Val_1_2020-plot-data-2022-10-18");
+    One_2020 = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/CEO_Points_4_Paper/ceo-New_Val_1_2020-plot-data-2022-10-18"),
+    hansenTreeCover = ee.Image("UMD/hansen/global_forest_change_2021_v1_9"),
+    connectedRice2019 = ee.Image("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/ConnectedPixels/connectedRice2019"),
+    connectedRice2020 = ee.Image("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/ConnectedPixels/connectedRice2020");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
 var points = lte2;
 var label = 'presence_lte2';
@@ -47,7 +50,7 @@ var baseModule = require('users/biplovbhandari/Rice_Mapping_Bhutan:main.js');
 
 var ROI = ee.FeatureCollection('USDOS/LSIB_SIMPLE/2017').filter(ee.Filter.eq('country_na','Bhutan'));
 
-Map.centerObject(ROI, 9);
+// Map.centerObject(ROI, 9);
 
 
 // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +195,122 @@ print('Validation Starts Here');
 print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$');
 
 
+// some post processing before validation
+
+// Hansen Tree Cover Layer
+// This makes area not lost as 1
+// var areaWithoutLoss = hansenTreeCover.select('loss').eq(0).rename('notLost');
+// Map.addLayer(areaWithoutLoss, {}, 'areaWithoutLoss', false);
+
+// // Forest pixels which were never lost and had a cover of 75% or above on 2000
+// var forest = hansenTreeCover.select('treecover2000').gte(75).updateMask(areaWithoutLoss.eq(1)).rename('forest');
+// Map.addLayer(forest, {}, 'forest', false);
+
+Map.addLayer(rice2019.selfMask(), {palette: 'green'}, 'rice2019');
+// // Map.addLayer(rice2020.selfMask(), {palette: 'green'}, 'rice2020');
+
+// // apply first mask
+// rice2019 = rice2019.updateMask(forest.eq(0));
+// rice2020 = rice2020.updateMask(forest.eq(0));
+
+// Map.addLayer(rice2019.selfMask(), {palette: 'red'}, 'rice2019_1');
+// Map.addLayer(rice2020.selfMask(), {palette: 'red'}, 'rice2020_1');
+
+
+// using RLCMS layer
+// 2019
+var rlcms2019 = ee.Image('projects/servir-hkh/RLCMS/HKH/landcover/hkh_landcover-2019').clip(ROI);
+Map.addLayer(rlcms2019, {min:1, max:10, palette: '005CE6,73DFFF,73DFFF,267300,2197FF,E60000,FFFF00,D7C29E,E8BEFF,BAFFA3'}, 'RLCMS-2019', false);
+
+var rlcmsForest2019 = rlcms2019.eq(4);
+Map.addLayer(rlcmsForest2019, {}, 'rlcmsForest2019');
+rice2019 = rice2019.updateMask(rlcmsForest2019.eq(0)).unmask(0);
+Map.addLayer(rice2019.selfMask(), {palette: 'red'}, 'rice2019_1');
+
+// rice2019 = rice2019.unmask(0);
+
+// probably not a good idea to verify with crop layer
+var rlcmsCrop2019 = rlcms2019.eq(7); // 7
+Map.addLayer(rlcmsCrop2019, {}, 'rlcmsCrop2019');
+var sumRiceCrop2019 = rice2019.add(rlcmsCrop2019);
+rice2019 = rice2019.updateMask(sumRiceCrop2019.eq(2));
+Map.addLayer(rice2019.selfMask(), {palette: 'red'}, 'rice2019_2');
+
+
+// using RLCMS layer
+// 2020
+var rlcms2020 = ee.Image('projects/servir-hkh/RLCMS/HKH/landcover/2020').clip(ROI);
+Map.addLayer(rlcms2020, {min:1, max:10, palette: '005CE6,73DFFF,73DFFF,267300,2197FF,E60000,FFFF00,D7C29E,E8BEFF,BAFFA3'}, 'RLCMS-2020', false);
+
+var rlcmsForest2020 = rlcms2020.eq(4);
+Map.addLayer(rlcmsForest2020, {}, 'rlcmsForest2020');
+rice2020 = rice2020.updateMask(rlcmsForest2020.eq(0)).unmask(0);
+Map.addLayer(rice2020.selfMask(), {palette: 'red'}, 'rice2020_1');
+
+// rice2019 = rice2019.unmask(0);
+
+// probably not a good idea to verify with crop layer
+var rlcmsCrop2020 = rlcms2020.eq(7); // 7
+Map.addLayer(rlcmsCrop2020, {}, 'rlcmsCrop2020');
+var sumRiceCrop2020 = rice2020.add(rlcmsCrop2020);
+rice2020 = rice2020.updateMask(sumRiceCrop2020.eq(2));
+Map.addLayer(rice2020.selfMask(), {palette: 'red'}, 'rice2020_2');
+
+
+// connected pixels
+
+// var connectedRice2019 = rice2019.eq(1).connectedPixelCount({
+//   maxSize: 128, eightConnected: false
+// });
+
+// Export.image.toAsset({
+//   image: connectedRice2019,
+//   description: 'connectedRice2019',
+//   assetId: 'projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/ConnectedPixels/connectedRice2019',
+//   scale: 30,
+//   region: ROI,
+//   maxPixels: 1E13,
+// });
+
+// var connectedRice2020 = rice2020.eq(1).connectedPixelCount({
+//   maxSize: 128, eightConnected: false
+// });
+
+// Export.image.toAsset({
+//   image: connectedRice2020,
+//   description: 'connectedRice2020',
+//   assetId: 'projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/ConnectedPixels/connectedRice2020',
+//   scale: 30,
+//   region: ROI,
+//   maxPixels: 1E13,
+// });
+
+// Get a pixel area image.
+var pixelArea = ee.Image.pixelArea();
+
+// Multiply pixel area by the number of pixels in an object to calculate
+// the object area. The result is an image where each pixel
+// of an object relates the area of the object in m^2.
+var objectArea2019 = connectedRice2019.multiply(pixelArea);
+
+// Threshold the objectArea image to define a mask that will mask out
+// objects below a given size (1 hectare in this case).
+var areaMask2019 = objectArea2019.gte(3*30*30);
+
+rice2019 = rice2019.updateMask(areaMask2019);
+
+Map.addLayer(rice2019.selfMask(), {palette: 'blue'}, 'rice2019_3');
+
+
+// 2020
+
+var objectArea2020 = connectedRice2020.multiply(pixelArea);
+var areaMask2020 = objectArea2020.gte(3*30*30);
+
+rice2020 = rice2020.updateMask(areaMask2020);
+
+Map.addLayer(rice2020.selfMask(), {palette: 'blue'}, 'rice2020_3');
+
 
 print('##########################################');
 print('Validation 2019');
@@ -226,7 +345,7 @@ labels_2019 = labels_2019.map(function(f) {
 
 print('labels_2019', labels_2019);
 
-var validationSample2019 = rice2019.sampleRegions({
+var validationSample2019 = rice2019.unmask(0).sampleRegions({
   collection: labels_2019,
   properties: [property],
   scale: 30,
@@ -260,6 +379,7 @@ One_2020 = One_2020.map(function (f) {
 
 var labels_2020 = Zero_2020.merge(One_2020);
 
+
 // Generate the histogram data.
 var histogram_2020 = ui.Chart.feature.histogram({
   features: labels_2020,
@@ -277,11 +397,12 @@ labels_2020 = labels_2020.map(function(f) {
   return f.setGeometry(geometry);
 });
 
+
 Map.addLayer(labels_2020.filter(ee.Filter.eq(property, 1)), {color: 'darkgreen'}, 'labels_2020_rice', false);
 Map.addLayer(labels_2020.filter(ee.Filter.eq(property, 0)), {color: 'darkred'}, 'labels_2020_non_rice', false);
 
 
-var validationSample2020 = rice2020.sampleRegions({
+var validationSample2020 = rice2020.unmask(0).sampleRegions({
   collection: labels_2020,
   properties: [property],
   scale: 30,

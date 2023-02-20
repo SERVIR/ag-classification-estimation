@@ -136,6 +136,7 @@ function dbToPower(img){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 exports.getL7L8ReducedImage = getL7L8ReducedImage;
+exports.applyScaleFactorsL7L8 = applyScaleFactorsL7L8;
 exports.maskS2Collection = maskS2Collection;
 exports.maskL7L8 = maskL7L8;
 exports.maskL8ToaClouds = maskL8ToaClouds;

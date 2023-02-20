@@ -14,7 +14,7 @@ var imageVisParam = {"opacity":1,"bands":["classification"],"min":1,"max":1,"pal
     temp_annual_collection = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/Temperature_annual"),
     sm_annual_collection = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/SoilMoisture_annual");
 /***** End of imports. If edited, may not auto-convert in the playground. *****/
-imgList = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Model_Output_Temp_IC");
+imgList = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Predicted_Rice_Post_Processed_IC");
 
 // Selecting the region of interest
  
@@ -63,8 +63,8 @@ var palette5 = palettes.cmocean.Tempo[7];
 
 var panel = ui.Panel({style: {width:'20%'}});
 var intro = ui.Panel([
-  ui.Label('Bhutan Rice Mask GUI',{fontWeight: 'bold', fontSize: '18px', margin: '7px 5px'}),
-  ui.Label('This GUI uses crop masks of rice generated using a Random Forest model from GEE.',{fontWeight: 'bold',margin: '10px 7px'}),
+  ui.Label('ACES: Agricultural Classification and Estimation Service',{fontWeight: 'bold', fontSize: '18px', margin: '7px 5px'}),
+  ui.Label('This GUI visualizes annual rice crop masks generated using a Random Forest model from GEE.',{fontWeight: 'bold',margin: '10px 7px'}),
   ui.Label('To get rice stats, first choose your region of interest. By default, the region is whole of Bhutan.',{margin: '10px 7px'}),
   // ui.Label(''),
 ]);

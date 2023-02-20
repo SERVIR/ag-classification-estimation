@@ -69,12 +69,16 @@ function timePeriodSelector (ImageCollection, monthsList, yearsList, ROI) {
       var xic = ImageCollection.filterBounds(ROI).filter(
         ee.Filter.date(ee.Date.fromYMD(y, m, 1), ee.Date.fromYMD(y, m, 30))
       );
-      return xic.toList(xic.size());
+      // return xic.toList(xic.size());
+      var x = ee.Algorithms.If(xic.size().eq(0), ee.List([]), xic.toList(xic.size()));
+      return x;
+      
     });
     return ee.List(list_ic).flatten();
   });
   return ee.List(imageCollection).flatten();
 }
+
 
 
 
