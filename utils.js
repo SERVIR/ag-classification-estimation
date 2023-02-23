@@ -47,6 +47,29 @@ function timePeriodSelector (ImageCollection, monthsList, yearsList, ROI) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function getMedianCompositePerMonth(imageCollection, monthsList, yearsList, ROI) {
+  var imageCollectionComposites = yearsList.map(function (y) {
+    var list_ic = monthsList.map(function (m) {
+      var xic = imageCollection.filterBounds(ROI).filter(
+        ee.Filter.date(ee.Date.fromYMD(y, m, 1), ee.Date.fromYMD(y, m, 30))
+      );
+      // var x = ee.Algorithms.If(xic.size().eq(0), ee.List([]), xic.toList(xic.size()));
+      // var x = ee.Algorithms.If(xic.size().eq(0), ee.List([]), ee.List([xic.median()]));
+      return xic.median().set('system:time_start', ee.Date.fromYMD(y, m, 1)).set('system:time_end', ee.Date.fromYMD(y, m, 30));
+      
+    });
+    return ee.List(list_ic).flatten();
+  });
+  return ee.List(imageCollectionComposites).flatten();
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 function dateSplitter (ImageCollection, MonthRange1, MonthRange2, YearRange1, YearRange2, ROI){
   return ee.ImageCollection(
     ImageCollection.filter(ee.Filter.calendarRange(MonthRange1, MonthRange2, 'month'))
@@ -80,4 +103,5 @@ exports.bulkRenameBands = bulkRenameBands;
 exports.timePeriodSelector = timePeriodSelector;
 exports.dateSplitter = dateSplitter;
 exports.exportImageAsset = exportImageAsset;
+exports.getMedianCompositePerMonth = getMedianCompositePerMonth;
 

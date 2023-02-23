@@ -30,7 +30,13 @@ function maskS2Collection(imageCollection) {
     var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
                  .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
   
-    return image.updateMask(mask).divide(10000);
+    var prop = image.toDictionary();
+    var system_time_index = image.get('system:time_start');
+  
+    var returnImage = image.updateMask(mask).divide(10000);
+    // returnImage = returnImage.set(prop).copyProperties(image, ['system:time_start', 'system:footprint']);
+    returnImage = returnImage.set(prop).set('system:time_start', system_time_index);
+    return ee.Image(returnImage);
   }
   
   return ee.ImageCollection(imageCollection).map(maskS2clouds);
@@ -129,7 +135,6 @@ function powerToDb(img){
 function dbToPower(img){
   return ee.Image(10).pow(img.divide(10));
 }
-
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

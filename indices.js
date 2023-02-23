@@ -13,7 +13,7 @@ function _calculateL7L8Indices (imageCollection) {
   
     var NDVI = image.normalizedDifference(['nir', 'red']).rename('NDVI');
     NDVI = ee.Image(NDVI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-    
+
     var NDWI = image.normalizedDifference(['green', 'nir']).rename('NDWI');
     NDWI = ee.Image(NDWI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
   
@@ -173,6 +173,13 @@ function calculateS2Indices(imageCollection){
   );
 
   var S2_NDVI = image.normalizedDifference(['B8', 'B4']).rename('S2_NDVI');
+
+  var S2_EVI = image.expression (
+    '2.5 * ((NIR - RED) / (NIR + 6 * RED - 7.5 * BLUE + 1))', {
+      'NIR': image.select('B8'),
+      'RED': image.select('B4'),
+      'BLUE': image.select('B2')
+  }).rename('S2_EVI');
   
   var S2_NDWI = image.normalizedDifference(['B3', 'B8']).rename('S2_NDWI');
 
@@ -186,7 +193,7 @@ function calculateS2Indices(imageCollection){
     
   var S2_NDBI = image.normalizedDifference(['B11', 'B8']).rename('S2_NDBI');
 
-  return S2_NDVI.addBands([S2_NDWI, S2_MNDWI, S2_SAVI, S2_NDMI, S2_NDBI]).float();
+  return S2_NDVI.addBands([S2_NDWI, S2_EVI, S2_MNDWI, S2_SAVI, S2_NDMI, S2_NDBI]).float();
 }
 
 
