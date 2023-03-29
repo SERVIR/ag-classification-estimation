@@ -155,7 +155,7 @@ var parameterSpace = ee.Dictionary({
   maxNodes: maxNodes,
 });
 
-var rfClassifiers = baseModule.modelTuner.randomForest(trainingSample, bands, finalImagery, label, parameterSpace);
+var rfClassifiers = baseModule.model.randomForestParameterSpace(trainingSample, bands, finalImagery, label, parameterSpace);
 rfClassifiers = ee.FeatureCollection(rfClassifiers.flatten());
 
 // This is exported to your google drive in the earthengine folder
