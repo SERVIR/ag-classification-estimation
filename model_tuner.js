@@ -2,7 +2,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-function randomForest(FeatureCollection, bandList, image, label) {
+function randomForest(FeatureCollection, bandList, image, label, parameterSpace) {
     
   var split = 0.75;
   var training = FeatureCollection.filter(ee.Filter.lt('random', split));
@@ -31,25 +31,17 @@ function randomForest(FeatureCollection, bandList, image, label) {
   print();
   print('testing samples', testing.size());
 
-  print('Training Rice Samples', testing.filter(ee.Filter.eq(label, 1)).size());
-  print('Training Non-rice samples', testing.filter(ee.Filter.eq(label, 0)).size());
-  print('TrainingRice: Non-rice ratio', testing.filter(ee.Filter.eq(label, 1)).size().divide(testing.filter(ee.Filter.eq(label, 0)).size()));
+  print('Testing Rice Samples', testing.filter(ee.Filter.eq(label, 1)).size());
+  print('Testing Non-rice samples', testing.filter(ee.Filter.eq(label, 0)).size());
+  print('Testing: Non-rice ratio', testing.filter(ee.Filter.eq(label, 1)).size().divide(testing.filter(ee.Filter.eq(label, 0)).size()));
 
   
-  var numberOfTrees = ee.List.sequence(30, 120, 10);
-  // var _variablesPerSplit = ee.List.sequence(1, bandList.size(),1);
-  // var variablesPerSplit = _variablesPerSplit.cat(ee.List([null]));
-  var variablesPerSplit = ee.List([null, bandList.size()]);
-  var minLeafPopulation = ee.List.sequence(1, 5, 1);
-  var bagFraction = ee.List.sequence(0.5, 1.0, 0.1);
-  // var maxNodes1 = ee.List.sequence(10, 100, 10);
-  // var maxNodes = maxNodes1.cat(ee.List([null]));
-  var maxNodes = ee.List([null]);
-  
-  var nRFModels = numberOfTrees.size().multiply(variablesPerSplit.size())
-                    .multiply(minLeafPopulation.size()).multiply(bagFraction.size())
-                    .multiply(maxNodes.size());
-  print('nRFModels', nRFModels);
+  parameterSpace = ee.Dictionary(parameterSpace);
+  var numberOfTrees = ee.List(parameterSpace.get('numberOfTrees'));
+  var variablesPerSplit = ee.List(parameterSpace.get('variablesPerSplit'));
+  var minLeafPopulation = ee.List(parameterSpace.get('minLeafPopulation'));
+  var bagFraction = ee.List(parameterSpace.get('bagFraction'));
+  var maxNodes = ee.List(parameterSpace.get('maxNodes'));
   
   var randomForests = numberOfTrees.map(function (_numberOfTrees) {
     
@@ -115,45 +107,7 @@ function randomForest(FeatureCollection, bandList, image, label) {
   });
   
   return randomForests;
-  
-  // Make a Random Forest classifier and train it.
-  // var trainedClassifier = ee.Classifier.smileRandomForest({
-  //   numberOfTrees: 190,
-  //   variablesPerSplit: bandList.size(),
-  //   minLeafPopulation: 2,
-  //   bagFraction: 0.9,
-  //   maxNodes: 90,
-  //   seed: 9999
-  // }).train({
-  //   features: training,
-  //   classProperty: label,
-  //   inputProperties: bandList,
-  //   subsamplingSeed: 9999
-  // });
-  
-  // var dict_RF = trainedClassifier.explain();
-  // var variable_importance_RF = ee.Feature(null, ee.Dictionary(dict_RF).get('importance'));
-  // var chart_variable_importance_RF =
-  //   ui.Chart.feature.byProperty(variable_importance_RF)
-  //   .setChartType('ColumnChart')
-  //   .setOptions({
-  //   title: 'Random Forest Variable Importance',
-  //   legend: {position: 'none'},
-  //   hAxis: {title: 'Bands'},
-  //   vAxis: {title: 'Importance'}
-  //   });
-  // print("chart_variable_importance_RF", chart_variable_importance_RF);   
-  
-  
-  // // Classify the test FeatureCollection.
-  // var testingClassified = testing.classify(trainedClassifier);
 
-  // // Print the confusion matrix.
-  // var errorMatrix = testingClassified.errorMatrix(label, 'classification');
-  // print('Error Matrix', errorMatrix);
-  // print('Test accuracy: ', errorMatrix.accuracy());
-  // print('Test kappa: ', errorMatrix.kappa());
-  // return trainedClassifier;
 }
 
 

@@ -1,40 +1,4 @@
-var routine = require("users/biplovbhandari/Rice_Mapping_Bhutan:routine.js");
-
-// function starting with underscore (_) are experimental and not recommended
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// not recommended
-function _calculateL7L8Indices (imageCollection) {
-  
-  return imageCollection.map(function (image) {
-  
-    var NDVI = image.normalizedDifference(['nir', 'red']).rename('NDVI');
-    NDVI = ee.Image(NDVI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-
-    var NDWI = image.normalizedDifference(['green', 'nir']).rename('NDWI');
-    NDWI = ee.Image(NDWI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-  
-    var MNDWI = image.normalizedDifference(["green","swir1"]).rename('MNDWI');
-    MNDWI = ee.Image(MNDWI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-    
-    var SAVI = image.expression('((NIR - RED) / (NIR + RED + 0.5))*(1.5)', {
-                                    'NIR': image.select('nir'),
-                                    'RED': image.select('red')}).rename("SAVI");
-    SAVI = ee.Image(SAVI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-          
-    var NDMI = image.normalizedDifference(["nir","swir1"]).rename('NDMI');
-    NDMI =  ee.Image(NDMI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-      
-    var NDBI = image.normalizedDifference(["swir1","nir"]).rename('NDBI');
-    NDBI = ee.Image(NDBI.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-
-    return NDVI.addBands([NDWI, MNDWI, NDMI, NDBI]);
-  });
-}
-
+var routine = require("users/biplov/bhutan-aces-v-1:routine.js");
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,8 +34,6 @@ function calculateL7L8Indices (imageCollection) {
 
 function calculateL8ToaTasseledCapIndices(imageCollection) {
 
-  // this does not work.
-  // imageCollection = imageCollection.map(routine.maskL8ToaClouds);
   imageCollection = imageCollection.map(routine.maskL7L8);
 
   var image = imageCollection.median();
@@ -192,39 +154,9 @@ function calculateS2Indices(imageCollection){
   var S2_NDMI = image.normalizedDifference(['B8', 'B11']).rename('S2_NDMI');
     
   var S2_NDBI = image.normalizedDifference(['B11', 'B8']).rename('S2_NDBI');
-
+  
   return S2_NDVI.addBands([S2_NDWI, S2_EVI, S2_MNDWI, S2_SAVI, S2_NDMI, S2_NDBI]).float();
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// mosaic unknown area
-// not recommended
-function _calculateS1Indices (ImageCollection) {
-
-  var vvMosaic = ImageCollection.select('VV').mosaic();
-  var VV = ImageCollection.select('VV').median().unmask(vvMosaic);
-
-  var vhMosaic = ImageCollection.select('VV').mosaic();
-  var VH = ImageCollection.select('VH').median().unmask(vhMosaic);
-
-  var S1_ratio = ImageCollection.map(function(image) {
-    var vv = image.select('VV').unmask(vvMosaic);
-    var vh = image.select('VH').unmask(vhMosaic);
-    var ratio = vv.divide(vh).rename('ratio');
-    return  ee.Image(ratio.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-  }).median();
-
-  var S1_ndratio = ImageCollection.map(function(image) { 
-    var vv = image.select('VV').unmask(vvMosaic);
-    var vh = image.select('VH').unmask(vhMosaic);
-    var ndratio =  image.expression('(vv - vh) / (vv + vh)', {'vv': vv, 'vh': vh}).rename('ndratio');
-    return  ee.Image(ndratio.copyProperties(image)).set('system:time_start', image.get('system:time_start'));
-  }).median();
-
-  return VV.addBands([VH, S1_ratio, S1_ndratio]);
+    
 }
 
 

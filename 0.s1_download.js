@@ -1,3 +1,5 @@
+// This script preprocess the sentinel 1 data and export it
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -6,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var baseModule = require('users/biplovbhandari/Rice_Mapping_Bhutan:main.js');
+var baseModule = require('users/biplov/bhutan-aces-v-1:main.js');
 
 
 
@@ -43,12 +45,26 @@ var s1Ascending = ee.ImageCollection('COPERNICUS/S1_GRD')
             .filter(ee.Filter.eq('instrumentMode', 'IW'));
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////
+////  INPUT NEEDED BLOCK
+////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 // Do months 5-10 (inclusive) individually
 // Do 1 month at a time.
 // if multiple month/year is added; baseModule.utils.timePeriodSelector will give you all
 var monthsList = [5];    // <--- INPUT NEEDED: MONTH NUMBER
 var yearsList = [2020];
-var dateFormat = '2020-0' + monthsList[0] + '-01';
+
+// var dateFormat = yearsList[0] + '-0' + monthsList[0] + '-01';
+
+var dateOfProcess = ee.Date.fromYMD(yearsList[0], monthsList[0], 1);
+var endDateOfProcess = dateOfProcess.advance(1, 'month').advance(-1, 'day');
+var dateFormat = dateOfProcess.format('YYYY-MM-dd').getInfo();
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,19 +85,19 @@ var s1DescendingFinal = ee.ImageCollection(
 ).sort('system:time_start');
 
 // Terrain Correction
-s1DescendingFinal = baseModule.s1_correction.radiometricTerrainCorrection(s1DescendingFinal);
+s1DescendingFinal = baseModule.s1Correction.radiometricTerrainCorrection(s1DescendingFinal);
 // Lee filter
-s1DescendingFinal = baseModule.s1_correction.refinedLeeSpeckleFilter(s1DescendingFinal);
+s1DescendingFinal = baseModule.s1Correction.refinedLeeSpeckleFilter(s1DescendingFinal);
 
 // Get a median composite for the filtered image
 var s1DescendingFinalImg = s1DescendingFinal.select(['VV', 'VH']).median();
-s1DescendingFinalImg = s1DescendingFinalImg.set('system:time_start', ee.Date(dateFormat));
+s1DescendingFinalImg = s1DescendingFinalImg.set('system:time_start', dateOfProcess.millis(), 'system:time_end', endDateOfProcess.millis());
 print('s1DescendingFinalImg', s1DescendingFinalImg);
 
 // Export Terrain corrected and Lee filtered image
 // parameters to the function call are: image, description, region, scale, assetId
 baseModule.utils.exportImageAsset(s1DescendingFinalImg, 's1DescendingFinalImg_' + dateFormat, ROI, 10,
-'projects/servir-sco-assets/assets/Bhutan/Sentinel1Descending/Descending_' + dateFormat);
+'projects/servir-sco-assets/assets/Bhutan/Sentinel1Descending' + yearsList[0] + '/Descending_' + dateFormat);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,16 +109,16 @@ var s1AscendingFinal = ee.ImageCollection(
 ).sort('system:time_start');
 
 // Terrain Correction
-s1AscendingFinal = baseModule.s1_correction.radiometricTerrainCorrection(s1AscendingFinal);
+s1AscendingFinal = baseModule.s1Correction.radiometricTerrainCorrection(s1AscendingFinal);
 // Lee Filter
-s1AscendingFinal = baseModule.s1_correction.refinedLeeSpeckleFilter(s1AscendingFinal);
+s1AscendingFinal = baseModule.s1Correction.refinedLeeSpeckleFilter(s1AscendingFinal);
 
 // Get a median composite for the filtered image
 var s1AscendingFinalImg = s1AscendingFinal.select(['VV', 'VH']).median();
-s1AscendingFinalImg = s1AscendingFinalImg.set('system:time_start', ee.Date(dateFormat));
+s1AscendingFinalImg = s1AscendingFinalImg.set('system:time_start', dateOfProcess.millis(), 'system:time_end', endDateOfProcess.millis());
 print('s1AscendingFinalImg', s1AscendingFinalImg);
 
 // Export Terrain corrected and Lee filtered image
 // parameters to the function call are: image, description, region, scale, assetId
 baseModule.utils.exportImageAsset(s1AscendingFinalImg, 's1AscendingFinalImg_' + dateFormat, ROI, 10,
-'projects/servir-sco-assets/assets/Bhutan/Sentinel1Ascending/Ascending_' + dateFormat);
+'projects/servir-sco-assets/assets/Bhutan/Sentinel1Ascending' + yearsList[0] + '/Ascending_' + dateFormat);

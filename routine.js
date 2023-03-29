@@ -61,7 +61,10 @@ function applyScaleFactorsL7L8(image) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// This function gets a reduced image via mosaic
+// you can also do median, but that would mean your spatial extent are limited
 function getL7L8ReducedImage(listofDates, LS8, LS7) {
+  
   LS8 = LS8.map(applyScaleFactorsL7L8).map(maskL7L8);
   LS7 = LS7.map(applyScaleFactorsL7L8).map(maskL7L8);
   return listofDates.map(function (ld) {
@@ -71,51 +74,6 @@ function getL7L8ReducedImage(listofDates, LS8, LS7) {
     // return lc.median();
     return lc.mosaic();
   });
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// needs fixing?
-function maskL8ToaClouds (image) {
-
-  function getQABits (image, start, end, newName) {
-    // Compute the bits we need to extract.
-    var pattern = 0;
-    for (var i = start; i <= end; i++) {
-       pattern += Math.pow(2, i);
-    }
-    // Return a single band image of the extracted QA bits, giving the band
-    // a new name.
-    return image.select([0], [newName])
-                  .bitwiseAnd(pattern)
-                  .rightShift(start);
-  }
-
-  // A function to mask out cloudy pixels.
-  function cloud_shadows (image) {
-    // Select the QA band.
-    var QA = image.select(['QA_PIXEL']);
-    // Get the internal_cloud_algorithm_flag bit.
-    return getQABits(QA, 7, 8, 'Cloud_shadows').eq(1);
-    // Return an image masking out cloudy areas.
-  }
-  
-  // A function to mask out cloudy pixels.
-  function clouds (image) {
-    // Select the QA band.
-    var QA = image.select(['BQA']);
-    // Get the internal_cloud_algorithm_flag bit.
-    return getQABits(QA, 4, 4, 'Cloud').eq(0);
-    // Return an image masking out cloudy areas.
-  }
-
-  var cs = cloud_shadows(image);
-  var c = clouds(image);
-  image = image.updateMask(cs);
-  return image.updateMask(c);
 }
 
 
@@ -144,6 +102,5 @@ exports.getL7L8ReducedImage = getL7L8ReducedImage;
 exports.applyScaleFactorsL7L8 = applyScaleFactorsL7L8;
 exports.maskS2Collection = maskS2Collection;
 exports.maskL7L8 = maskL7L8;
-exports.maskL8ToaClouds = maskL8ToaClouds;
 exports.powerToDb = powerToDb;
 exports.dbToPower = dbToPower;
