@@ -47,11 +47,7 @@ function maskS2Collection(imageCollection) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function applyScaleFactorsL7L8(image) {
-  // var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
-  // var thermalBands = image.select('ST_B.*').multiply(0.00341802).add(149.0);
-  // return image.addBands(opticalBands, null, true)
-  //             .addBands(thermalBands, null, true);
+function applyScaleFactorsL7L8 (image) {
   var opticalBands = image.select(['green', 'red', 'nir', 'swir1']).multiply(0.0000275).add(-0.2);
   return image.addBands(opticalBands, null, true);
 }
