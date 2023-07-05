@@ -66,6 +66,7 @@ var dateOfProcess = ee.Date.fromYMD(yearsList[0], monthsList[0], 1);
 var endDateOfProcess = dateOfProcess.advance(1, 'month').advance(-1, 'day');
 var dateFormat = dateOfProcess.format('YYYY-MM-dd').getInfo();
 
+var exportPath = 'projects/ee-aces-bhutan/assets/s1_images';
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ print('s1DescendingFinalImg', s1DescendingFinalImg);
 // Export Terrain corrected and Lee filtered image
 // parameters to the function call are: image, description, region, scale, assetId
 baseModule.utils.exportImageAsset(s1DescendingFinalImg, 's1DescendingFinalImg_' + dateFormat, ROI, 10,
-'projects/servir-sco-assets/assets/Bhutan/Sentinel1Descending' + yearsList[0] + '/Descending_' + dateFormat);
+exportPath + '/Sentinel1Descending' + yearsList[0] + '/Descending_' + dateFormat);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,4 +122,4 @@ print('s1AscendingFinalImg', s1AscendingFinalImg);
 // Export Terrain corrected and Lee filtered image
 // parameters to the function call are: image, description, region, scale, assetId
 baseModule.utils.exportImageAsset(s1AscendingFinalImg, 's1AscendingFinalImg_' + dateFormat, ROI, 10,
-'projects/servir-sco-assets/assets/Bhutan/Sentinel1Ascending' + yearsList[0] + '/Ascending_' + dateFormat);
+exportPath + '/Sentinel1Ascending' + yearsList[0] + '/Ascending_' + dateFormat);
