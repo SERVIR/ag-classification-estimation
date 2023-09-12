@@ -124,9 +124,6 @@ function randomForest(FeatureCollection, bandList, image, label, parameters) {
   var training = FeatureCollection.filter(ee.Filter.lt('random', split));
   var testing = FeatureCollection.filter(ee.Filter.gte('random', split));
   
-  print('training samples', training);
-  print('testing samples', testing);
-  
   // Make a Random Forest classifier and train it.
   var trainedClassifier = ee.Classifier.smileRandomForest({
     numberOfTrees: parameters.get('numberOfTrees'),

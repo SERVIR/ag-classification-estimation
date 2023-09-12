@@ -27,6 +27,8 @@ table = table.map(function (point) {
   return point.setGeometry(geometry);
 });
 
+var path = 'projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -61,12 +63,12 @@ Map.centerObject(ROI, 9);
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var landsatIndicesImage = ee.Image('projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year + '/LandsatIndices');
-var s2IndicesImage = ee.Image('projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year + '/S2Indices');
-var l8TocIndicesImage = ee.Image('projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year + '/landsatTasseledCapIndices');
-var s1AscendingImage = ee.Image('projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year + '/s1Ascending');
+var landsatIndicesImage = ee.Image(path + '/LandsatIndices_' + year);
+var s2IndicesImage = ee.Image(path + '/S2Indices_' + year);
+var l8TocIndicesImage = ee.Image(path + '/landsatTasseledCapIndices_' + year);
+var s1AscendingImage = ee.Image(path + '/s1Ascending_' + year);
 s1AscendingImage = s1AscendingImage.select(['VV', 'VH', 'ratio', 'ndratio'], ['vv_asc', 'vh_asc', 'ratio_asc', 'ndratio_asc']);
-var s1DescendingImage = ee.Image('projects/servir-sco-assets/assets/Bhutan/Rice_Extent_Mapper/Composite_' + year + '/s1Descending');
+var s1DescendingImage = ee.Image(path + '/s1Descending_' + year);
 s1DescendingImage = s1DescendingImage.select(['VV', 'VH', 'ratio', 'ndratio'], ['vv_desc', 'vh_desc', 'ratio_desc', 'ndratio_desc']);
 
 // topographic variables
@@ -132,15 +134,17 @@ print('trainingSample length', trainingSample.size());
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // let's create the parameter space
-var numberOfTrees = ee.List.sequence(40, 120, 10);
+var numberOfTrees = ee.List.sequence(50, 120, 10);
 var variablesPerSplit = ee.List([null, bands.size()]);
-var minLeafPopulation = ee.List.sequence(1, 5, 1);
+var minLeafPopulation = ee.List.sequence(1, 3, 1);
 var bagFraction = ee.List.sequence(0.5, 1.0, 0.1);
 var maxNodes = ee.List([null]);
 // We are using null as the max nodes
 // ideally you could also have them in the list as below.
 // var maxNodes1 = ee.List.sequence(10, 100, 10);
 // var maxNodes = maxNodes1.cat(ee.List([null]));
+
+
 
 var nRFModels = numberOfTrees.size().multiply(variablesPerSplit.size())
                   .multiply(minLeafPopulation.size()).multiply(bagFraction.size())
