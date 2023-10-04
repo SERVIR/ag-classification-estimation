@@ -4,6 +4,8 @@ var imageVisParam = {"opacity":1,"bands":["classification"],"min":1,"max":1,"pal
     TemperatureVis = {"min":275,"max":293,"palette":["1a3678","2955bc","5699ff","8dbae9","acd1ff","caebff","e5f9ff","fdffb4","ffe6a2","ffc969","ffa12d","ff7c1f","ca531a","ff0000","ab0000"]},
     precipitationVis = {"min":0,"max":1000,"palette":["1a3678","2955bc","5699ff","8dbae9","acd1ff","caebff","e5f9ff","fdffb4","ffe6a2","ffc969","ffa12d","ff7c1f","ca531a","ff0000","ab0000"]},
     soilMoistureVis = {"min":0,"max":2000,"palette":["1a3678","2955bc","5699ff","8dbae9","acd1ff","caebff","e5f9ff","fdffb4","ffe6a2","ffc969","ffa12d","ff7c1f","ca531a","ff0000","ab0000"]},
+    //district_stats = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/FinalStats"),
+    //district_stats = ee.FeatureCollection("projects/servir-sco-assets/assets/Bhutan/Dist_Stat_10_2_23"),
     district_stats = ee.FeatureCollection("projects/servir-sco-assets/assets/District_Stats_10_3"),
     consImgList = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/YearlyConsistentRiceMap"),
     imgList = ee.ImageCollection("projects/servir-sco-assets/assets/Bhutan/yearlyAggregatedRiceMask"),
@@ -34,6 +36,10 @@ mapPanel.add(ROI_ml);
 var dist = "All Dzongkhags"
 var Districts = district_stats.aggregate_array('Dzongkhag').distinct().sort();
 Map.addLayer(ROI)
+
+
+print("district_stats", district_stats.filter(ee.Filter.eq('Dzongkhag', 'All Dzongkhags')).aggregate_array('Year'))
+print("district_stats T", district_stats.filter(ee.Filter.eq('Dzongkhag', 'All Dzongkhags')).aggregate_array('T'))
 
 // Center the map
 
@@ -163,7 +169,9 @@ function gen_secondary_charts(){
     return ee.Number(get_med(yr,"T")).format('%.3f');//.subtract(273)
   })
   
-  temp_chart = ui.Chart.array.values({array: ee.List(annual_temp), axis: 0, xLabels: years}) 
+  ////var t_pull = district_stats.filter(ee.Filter.eq('Dzongkhag', 'All Dzongkhags')).aggregate_array('T')
+  
+  temp_chart = ui.Chart.array.values({array: ee.List(annual_temp), axis: 0, xLabels: years}) ///annual_temp <- in the ee.List(annual_temp)   /////t_pull
       .setOptions({
           legend: {position: 'none'},
           title: "Annual median temperature",
@@ -579,7 +587,7 @@ function updateMapPanel(not_date, not_sub, subdist) {
   mapPanel.setCenter(roi_cent.get(0).getInfo(),roi_cent.get(1).getInfo(), 9);
 
   
-  if (year == "2022"){
+  if (year == years[years.length - 1]){
     panel.remove(loss_chart)
     loss_chart = ui.Label('Insuffient rice maps after the selected year to compare loss to', {backgroundColor:'#FF7276'});
     panel.insert(16, loss_chart)
@@ -645,13 +653,13 @@ var district_select = ui.Select({
         removedSubdistrictPanel = false
       }
       
-      var SubDistrictNames = ROI.aggregate_array('ADM2_EN').sort()
+      // var SubDistrictNames = ROI.aggregate_array('ADM2_EN').sort()
       
-      SubDistrictNames = ee.List(['All Gewogs']).cat(SubDistrictNames)
-      // Pass the sub-district names to the items for the next drop down
-      var selected_subdistrict = SubDistrictName.evaluate(function(values) {
-        subdistrict_select.items().reset(values);
-      })
+      // SubDistrictNames = ee.List(['All Gewogs']).cat(SubDistrictNames)
+      // // Pass the sub-district names to the items for the next drop down
+      // var selected_subdistrict = SubDistrictName.evaluate(function(values) {
+      //   subdistrict_select.items().reset(values);
+      // })
     }
     updateMapPanel(true, true)
     return district_selection
@@ -678,7 +686,7 @@ panel.add(district_select);
 //////////////////////
 
 var year_selector = ui.Select({
-  items: ["2016","2017","2018","2019","2020", "2021","2022"],
+  items: years,
   placeholder: ('Select a year'),
   style: {width: '290px'},
   value: year,
